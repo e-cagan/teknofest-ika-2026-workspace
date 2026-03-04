@@ -1,0 +1,6 @@
+uint8 attempt_number
+---
+bool success
+float32 hold_duration_sec
+uint8 attempts_remaining
+string message

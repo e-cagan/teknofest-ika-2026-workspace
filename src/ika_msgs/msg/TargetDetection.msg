@@ -1,0 +1,14 @@
+std_msgs/Header header
+bool detected
+float32 center_x_px
+float32 center_y_px
+float32 image_width_px
+float32 image_height_px
+float32 error_x
+float32 error_y
+uint8 estimated_ring
+uint8 RING_UNKNOWN=0
+uint8 RING_INNER=1
+uint8 RING_MIDDLE=2
+uint8 RING_OUTER=3
+uint8 RING_MISS=4

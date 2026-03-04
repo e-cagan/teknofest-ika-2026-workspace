@@ -1,0 +1,12 @@
+float32 timeout_sec
+---
+bool locked
+float32 final_error_x
+float32 final_error_y
+uint8 estimated_ring
+float32 aim_duration_sec
+---
+float32 error_x
+float32 error_y
+bool target_visible
+string status

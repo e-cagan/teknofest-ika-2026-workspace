@@ -1,0 +1,10 @@
+std_msgs/Header header
+uint8 mode
+uint8 MODE_IDLE=0
+uint8 MODE_MANUAL=1
+uint8 MODE_AUTONOMOUS=2
+uint8 MODE_ESTOP=3
+uint8 MODE_TARGETING_LOCK=4
+uint8 current_stage_id
+bool run_active
+float32 elapsed_time_sec

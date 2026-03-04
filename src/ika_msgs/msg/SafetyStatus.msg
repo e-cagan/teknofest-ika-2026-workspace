@@ -1,0 +1,13 @@
+std_msgs/Header header
+bool estop_active
+bool estop_physical
+bool estop_remote
+bool estop_software
+bool heartbeat_jetson_ok
+bool heartbeat_operator_ok
+float32 battery_voltage
+float32 cpu_temperature
+uint8 system_health
+uint8 HEALTH_CRITICAL=0
+uint8 HEALTH_WARNING=1
+uint8 HEALTH_OK=2

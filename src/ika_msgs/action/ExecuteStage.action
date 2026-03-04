@@ -1,0 +1,11 @@
+uint8 stage_id
+---
+bool success
+uint8 stage_id
+float32 duration_sec
+int8 points_earned
+string result_detail
+---
+float32 progress
+string status
+uint8 stage_id

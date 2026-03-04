@@ -1,0 +1,6 @@
+uint8 stage_id
+---
+bool success
+string message
+uint8 skips_remaining
+int8 penalty_points

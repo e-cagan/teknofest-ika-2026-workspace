@@ -1,0 +1,8 @@
+std_msgs/Header header
+float32 speed_mps
+float32 heading_rad
+int32 encoder_left_ticks
+int32 encoder_right_ticks
+float32 battery_voltage
+float32 battery_current
+bool headlights_on
