@@ -1,0 +1,24 @@
+stm32_bridge_node:
+  ros__parameters:
+    # UART
+    serial_port: "/dev/ttyUSB0"
+    baud_rate: 115200
+    serial_timeout: 0.01          # saniye — non-blocking read
+
+    # Araç fiziksel parametreleri
+    wheel_base: 0.5               # Metre — sol-sağ teker merkez mesafesi
+    wheel_radius: 0.1             # Metre — teker yarıçapı
+    ticks_per_revolution: 1440    # Enkoder tick/tur (encoder çözünürlüğü)
+
+    # Hız limitleri
+    max_linear_speed: 2.0         # m/s
+    max_angular_speed: 3.0        # rad/s
+    max_rpm: 300                  # Motor maksimum RPM
+
+    # Zamanlama
+    cmd_rate: 20.0                # Hz — motor komut gönderme frekansı
+    heartbeat_rate: 2.0           # Hz — heartbeat gönderme frekansı
+    heartbeat_timeout: 2.0        # saniye — bu sürede ACK gelmezse bağlantı koptu
+
+    # Güvenlik
+    cmd_vel_timeout: 0.5          # saniye — bu sürede cmd_vel gelmezse motorları durdur
