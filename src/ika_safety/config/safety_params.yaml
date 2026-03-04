@@ -1,0 +1,37 @@
+heartbeat_monitor_node:
+  ros__parameters:
+    stm32_heartbeat_topic: "/safety/stm32_heartbeat"
+    operator_heartbeat_topic: "/safety/operator_heartbeat"
+    stm32_timeout_sec: 2.0
+    operator_timeout_sec: 3.0
+    check_rate: 5.0               # Hz
+
+estop_relay_node:
+  ros__parameters:
+    # Tüm e-stop kaynaklarını dinle, birini bile true görünce /safety/estop = true
+    publish_rate: 10.0            # Hz
+    # E-stop serbest bırakma: tüm kaynaklar temiz + manuel reset gerekli
+    require_manual_reset: true
+
+speed_limiter_node:
+  ros__parameters:
+    max_linear_speed: 2.0         # m/s — normal mod
+    max_angular_speed: 3.0        # rad/s — normal mod
+    sprint_linear_speed: 5.0      # m/s — hızlanma parkuru modu
+    targeting_lock_threshold: 0.01 # m/s — bu altında "durmuş" sayılır
+    input_topic: "/cmd_vel_raw"
+    output_topic: "/cmd_vel"
+    rate: 50.0                    # Hz
+
+system_health_node:
+  ros__parameters:
+    battery_critical_voltage: 20.0    # V — bu altında CRITICAL
+    battery_warning_voltage: 22.0     # V — bu altında WARNING
+    cpu_temp_warning: 75.0            # °C
+    cpu_temp_critical: 85.0           # °C
+    camera_topics:
+      - "/camera/front/image_raw"
+      - "/camera/rear/image_raw"
+      - "/camera/targeting/image_raw"
+    camera_timeout_sec: 2.0           # Bu sürede mesaj gelmezse kamera ölü
+    check_rate: 1.0                   # Hz
