@@ -1,0 +1,37 @@
+teleop_joy_node:
+  ros__parameters:
+    # Joystick axis mapping (Logitech F710 / Xbox layout)
+    linear_axis: 1              # Sol analog Y ekseni — ileri/geri
+    angular_axis: 0             # Sol analog X ekseni — sağa/sola dönüş
+    turbo_button: 5             # RB butonu — turbo mod
+    estop_button: 4             # LB butonu — yazılımsal e-stop
+    fire_button: 0              # A butonu — lazer ateşle
+    headlight_button: 3         # Y butonu — far aç/kapa
+
+    # Gimbal kontrol (sağ analog)
+    gimbal_pan_axis: 3          # Sağ analog X — gimbal pan
+    gimbal_tilt_axis: 4         # Sağ analog Y — gimbal tilt
+    gimbal_speed: 0.5           # rad/s — gimbal hareket hızı
+
+    # Hız ayarları
+    normal_linear: 0.5          # m/s — normal mod
+    normal_angular: 1.0         # rad/s — normal mod
+    turbo_linear: 1.5           # m/s — turbo mod
+    turbo_angular: 2.5          # rad/s — turbo mod
+
+    # Deadzone
+    deadzone: 0.1               # Joystick deadzone (0-1 arası)
+
+teleop_keyboard_node:
+  ros__parameters:
+    linear_speed: 0.5           # m/s — ileri/geri
+    angular_speed: 1.0          # rad/s — dönüş
+    linear_step: 0.1            # m/s — hız artırma adımı
+    angular_step: 0.2           # rad/s — dönüş hızı artırma adımı
+
+cmd_vel_mux_node:
+  ros__parameters:
+    # Timeout — bu sürede mesaj gelmezse kaynak pasif sayılır
+    teleop_timeout: 0.5         # saniye
+    nav_timeout: 0.5            # saniye
+    publish_rate: 20.0          # Hz
