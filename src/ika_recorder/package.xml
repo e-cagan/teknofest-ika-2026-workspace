@@ -3,20 +3,23 @@
 <package format="3">
   <name>ika_recorder</name>
   <version>0.0.0</version>
-  <description>Data recording: rosbag2 + MP4 video recorder</description>
+  <description>Data recording: rosbag2 recorder, MP4 video recorder</description>
   <maintainer email="emincaganapaydin@gmail.com">cagan</maintainer>
   <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
 
   <depend>rclpy</depend>
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
-  <depend>rosbag2_py</depend>
+  <depend>cv_bridge</depend>
   <depend>ika_msgs</depend>
 
-  <test_depend>ament_copyright</test_depend>
-  <test_depend>ament_flake8</test_depend>
-  <test_depend>ament_pep257</test_depend>
-  <test_depend>python3-pytest</test_depend>
+  <exec_depend>ros2bag</exec_depend>
+  <exec_depend>rosbag2_storage_default_plugins</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
 
   <export>
     <build_type>ament_python</build_type>

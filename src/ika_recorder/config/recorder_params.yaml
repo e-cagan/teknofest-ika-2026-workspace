@@ -1,0 +1,68 @@
+video_recorder_node:
+  ros__parameters:
+    # Kamera topic'leri — şartname gereği 3 kamera kaydı zorunlu
+    camera_topics:
+      - "/camera/front/image_raw"
+      - "/camera/rear/image_raw"
+      - "/camera/targeting/image_raw"
+
+    # Çıktı dizini
+    output_dir: "/home/cagan/ika_recordings"
+
+    # Video ayarları
+    fps: 20.0
+    codec: "XVID"                     # OpenCV fourcc: XVID, MJPG, mp4v
+    file_extension: ".avi"            # .avi (XVID), .mp4 (mp4v)
+    max_file_size_mb: 2000            # Dosya boyutu limiti (MB)
+
+    # Otomatik başlatma
+    auto_start: false                 # true ise node başladığında kayıt başlar
+    start_on_run: true                # Koşu başladığında otomatik kayıt
+
+bag_recorder_node:
+  ros__parameters:
+    output_dir: "/home/cagan/ika_recordings"
+
+    # Kaydedilecek topic'ler
+    topics:
+      # Kameralar (compressed — disk alanı tasarrufu)
+      - "/camera/front/compressed"
+      - "/camera/rear/compressed"
+      - "/camera/targeting/compressed"
+      # Sensörler
+      - "/imu/data"
+      - "/scan"
+      - "/odom"
+      # Kontrol
+      - "/cmd_vel"
+      - "/cmd_vel_teleop"
+      - "/cmd_vel_nav"
+      # Algılama
+      - "/perception/stage_info"
+      - "/perception/cones"
+      - "/perception/target"
+      - "/perception/sliding_obstacle"
+      - "/perception/lane_center"
+      # Sistem
+      - "/system/mode"
+      - "/safety/status"
+      - "/safety/estop"
+      - "/vehicle_state"
+      # Targeting
+      - "/targeting/lock_status"
+      - "/targeting/sequencer_state"
+      - "/targeting/fire_result"
+      - "/targeting/aim_state"
+      # Autonomy
+      - "/autonomy/current_stage"
+      - "/autonomy/stage_transition"
+      - "/autonomy/active_behavior"
+      # Events
+      - "/system/event"
+
+    auto_start: false
+    start_on_run: true
+
+    # Sıkıştırma
+    storage_id: "sqlite3"             # rosbag2 default storage
+    max_bag_size_bytes: 0             # 0 = limitsiz
