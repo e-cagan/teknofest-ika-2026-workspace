@@ -1,0 +1,37 @@
+# Build artifacts
+build/
+install/
+log/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Recordings (büyük dosyalar, container'a girmesin)
+recordings/
+*.avi
+*.mp4
+*.bag
+
+# Rosbag verileri
+**/rosbag2_*
+
+# Geçici
+tmp/
+temp/
