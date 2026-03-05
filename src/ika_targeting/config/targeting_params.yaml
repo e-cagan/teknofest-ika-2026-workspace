@@ -1,0 +1,55 @@
+# ══════════════════════════════════════════════
+#  MANUEL NİŞAN
+# ══════════════════════════════════════════════
+manual_targeting_node:
+  ros__parameters:
+    gimbal_cmd_topic: "/targeting/gimbal_cmd"
+    fire_request_topic: "/targeting/fire_request"
+    rate: 20.0
+
+# ══════════════════════════════════════════════
+#  OTONOM NİŞAN (AUTO-AIM)
+# ══════════════════════════════════════════════
+auto_targeting_node:
+  ros__parameters:
+    target_topic: "/perception/target"
+    gimbal_cmd_topic: "/targeting/gimbal_cmd"
+    rate: 30.0
+
+    # Gimbal PID — pan (X ekseni)
+    pan_kp: 0.8
+    pan_ki: 0.05
+    pan_kd: 0.15
+
+    # Gimbal PID — tilt (Y ekseni)
+    tilt_kp: 0.8
+    tilt_ki: 0.05
+    tilt_kd: 0.15
+
+    # Kilitlenme kriterleri
+    lock_error_threshold: 0.03      # Normalized hata bu altında → kilitli
+    lock_stable_count: 10           # Bu kadar ardışık frame kilitli → onay
+    lock_timeout_sec: 15.0          # Bu sürede kilitlenemezse vazgeç
+
+    # Gimbal limitleri
+    gimbal_pan_min_rad: -0.785      # -45 derece
+    gimbal_pan_max_rad: 0.785       # +45 derece
+    gimbal_tilt_min_rad: -0.524     # -30 derece
+    gimbal_tilt_max_rad: 0.524      # +30 derece
+
+    # Arama modu (hedef görünmüyorsa)
+    search_enabled: true
+    search_pan_speed: 0.2           # rad/s
+    search_tilt_speed: 0.1          # rad/s
+
+# ══════════════════════════════════════════════
+#  ATIŞ SEKANSI
+# ══════════════════════════════════════════════
+targeting_sequencer_node:
+  ros__parameters:
+    rate: 20.0
+    max_attempts: 3                   # Şartname: en fazla 3 deneme
+    laser_hold_duration_sec: 1.5      # Şartname: min 1s → 1.5s güvenlik payı
+    mode_switch_delay_sec: 0.3        # TARGETING_LOCK'a geçiş sonrası bekleme
+    laser_cmd_topic: "/targeting/laser_cmd"
+    gimbal_state_topic: "/targeting/gimbal_state"
