@@ -1,4 +1,6 @@
 from setuptools import find_packages, setup
+import os
+from glob import glob
 
 package_name = 'ika_perception'
 
@@ -10,6 +12,8 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),
+        (os.path.join('share', package_name, 'launch'), glob('launch/*.py')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -20,6 +24,11 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'stage_sign_detector_node = ika_perception.stage_sign_detector_node:main',
+            'cone_detector_node = ika_perception.cone_detector_node:main',
+            'barrier_detector_node = ika_perception.barrier_detector_node:main',
+            'sliding_obstacle_detector_node = ika_perception.sliding_obstacle_detector_node:main',
+            'target_detector_node = ika_perception.target_detector_node:main',
         ],
     },
 )

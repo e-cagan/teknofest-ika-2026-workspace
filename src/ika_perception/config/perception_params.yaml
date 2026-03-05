@@ -1,0 +1,167 @@
+# ══════════════════════════════════════════════
+#  TABELA TANIMA
+# ══════════════════════════════════════════════
+stage_sign_detector_node:
+  ros__parameters:
+    camera_topic: "/camera/front/image_raw"
+    publish_topic: "/perception/stage_info"
+    rate: 10.0                          # Hz
+
+    # Kırmızı daire tespiti (HSV)
+    red_lower1_h: 0
+    red_lower1_s: 100
+    red_lower1_v: 80
+    red_upper1_h: 10
+    red_upper1_s: 255
+    red_upper1_v: 255
+    red_lower2_h: 170
+    red_lower2_s: 100
+    red_lower2_v: 80
+    red_upper2_h: 180
+    red_upper2_s: 255
+    red_upper2_v: 255
+
+    # HoughCircles parametreleri
+    hough_dp: 1.2
+    hough_min_dist: 50
+    hough_param1: 100
+    hough_param2: 40
+    hough_min_radius: 20
+    hough_max_radius: 200
+
+    # Template matching
+    template_dir: ""                    # Boşsa paket içi templates/ kullanılır
+    template_match_threshold: 0.6
+
+    # Mesafe tahmini (piksel boyut → metre)
+    sign_real_diameter_m: 0.6           # Gerçek tabela çapı
+    camera_focal_length_px: 600.0       # Kamera odak uzaklığı (kalibrasyon ile)
+
+# ══════════════════════════════════════════════
+#  KONİ TESPİTİ (YOLOv8)
+# ══════════════════════════════════════════════
+cone_detector_node:
+  ros__parameters:
+    camera_topic: "/camera/front/image_raw"
+    lidar_topic: "/scan"
+    publish_topic: "/perception/cones"
+    rate: 15.0
+
+    # YOLO model
+    model_path: ""                      # Boşsa default yol kullanılır
+    confidence_threshold: 0.5
+    iou_threshold: 0.45
+    device: "0"                         # GPU index (Jetson: "0")
+    imgsz: 640
+
+    # Kamera-LiDAR füzyonu
+    enable_lidar_fusion: true
+    lidar_angle_tolerance_deg: 5.0      # Kamera tespiti ile LiDAR eşleme toleransı
+    max_detection_distance_m: 8.0
+
+    # Koni fiziksel boyutu (mesafe tahmini için)
+    cone_real_height_m: 0.75
+    camera_focal_length_px: 600.0
+
+# ══════════════════════════════════════════════
+#  BARİYER TESPİTİ + YOL MERKEZİ
+# ══════════════════════════════════════════════
+barrier_detector_node:
+  ros__parameters:
+    camera_topic: "/camera/front/image_raw"
+    lidar_topic: "/scan"
+    lane_center_topic: "/perception/lane_center"
+    barriers_topic: "/perception/barriers"
+    rate: 15.0
+
+    # Kırmızı-beyaz bariyer HSV
+    red_lower1_h: 0
+    red_lower1_s: 80
+    red_lower1_v: 60
+    red_upper1_h: 10
+    red_upper1_s: 255
+    red_upper1_v: 255
+    red_lower2_h: 170
+    red_lower2_s: 80
+    red_lower2_v: 60
+    red_upper2_h: 180
+    red_upper2_s: 255
+    red_upper2_v: 255
+
+    # Bariyer tespiti
+    min_contour_area: 500
+    road_width_m: 3.0
+
+    # LiDAR tabanlı bariyer tespiti
+    lidar_range_min: 0.15
+    lidar_range_max: 5.0
+    lidar_cluster_threshold: 0.2        # metre — ardışık noktalar arası
+
+# ══════════════════════════════════════════════
+#  KAYAR ENGEL TESPİTİ
+# ══════════════════════════════════════════════
+sliding_obstacle_detector_node:
+  ros__parameters:
+    lidar_topic: "/scan"
+    camera_topic: "/camera/front/image_raw"
+    publish_topic: "/perception/sliding_obstacle"
+    rate: 20.0
+
+    # LiDAR tabanlı hareket tespiti
+    obstacle_width_m: 1.0               # Şartname: 1m genişlik
+    obstacle_speed_mps: 0.2             # Şartname: 20cm/s
+    road_width_m: 3.0
+    motion_threshold_m: 0.05            # Frame-to-frame fark eşiği
+
+    # Kalman filter
+    kalman_process_noise: 0.01
+    kalman_measurement_noise: 0.05
+
+    # Geçiş kararı
+    vehicle_width_m: 1.0                # Araç genişliği (config'den)
+    safety_margin_m: 0.3                # Ek güvenlik payı
+
+# ══════════════════════════════════════════════
+#  HEDEF TESPİTİ (ATıŞ)
+# ══════════════════════════════════════════════
+target_detector_node:
+  ros__parameters:
+    camera_topic: "/camera/targeting/image_raw"
+    publish_topic: "/perception/target"
+    rate: 15.0
+
+    # Hedef renk tespiti (siyah-kırmızı konsantrik daire)
+    # Siyah alan
+    black_lower_h: 0
+    black_lower_s: 0
+    black_lower_v: 0
+    black_upper_h: 180
+    black_upper_s: 80
+    black_upper_v: 60
+
+    # Kırmızı alan (hedef halkaları)
+    red_lower1_h: 0
+    red_lower1_s: 100
+    red_lower1_v: 80
+    red_upper1_h: 10
+    red_upper1_s: 255
+    red_upper1_v: 255
+    red_lower2_h: 170
+    red_lower2_s: 100
+    red_lower2_v: 80
+    red_upper2_h: 180
+    red_upper2_s: 255
+    red_upper2_v: 255
+
+    # HoughCircles
+    hough_dp: 1.5
+    hough_min_dist: 20
+    hough_param1: 80
+    hough_param2: 30
+    hough_min_radius: 5
+    hough_max_radius: 300
+
+    # Hedef daire çapları (gerçek cm)
+    inner_diameter_cm: 6.0              # İç daire — 50 puan
+    middle_diameter_cm: 12.0            # Orta halka — 25 puan
+    outer_diameter_cm: 18.0             # Dış halka — 15 puan
