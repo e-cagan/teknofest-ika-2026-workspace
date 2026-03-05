@@ -1,0 +1,13 @@
+# TEKNOFEST 2026 İKA — USB Cihaz Kuralları
+# Jetson'a kopyala: sudo cp 99-ika.rules /etc/udev/rules.d/
+# Sonra: sudo udevadm control --reload-rules && sudo udevadm trigger
+
+# STM32 UART (CP2102 veya FTDI)
+SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", SYMLINK+="ttySTM32", MODE="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", SYMLINK+="ttySTM32", MODE="0666"
+
+# RPLidar
+SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", ATTRS{serial}=="*", SYMLINK+="ttyLIDAR", MODE="0666"
+
+# USB Kameralar
+SUBSYSTEM=="video4linux", ATTR{index}=="0", ATTRS{idVendor}=="046d", MODE="0666"

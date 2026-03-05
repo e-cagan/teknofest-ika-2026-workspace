@@ -1,0 +1,44 @@
+# ══════════════════════════════════════════════
+# TEKNOFEST 2026 İKA — Jetson Orin Nano Bağımlılıkları
+# ══════════════════════════════════════════════
+#
+# NOT: PyTorch ve torchvision bu dosyadan YÜKLENMEYECEK.
+# Jetson ARM64 mimarisi için NVIDIA'nın özel .whl dosyaları
+# veya L4T base container'ı kullanılmalıdır.
+# pip install torch → x86 versiyonunu indirir, Jetson'da ÇALIŞMAZ.
+#
+# Base image (dustynv/ros:humble-pytorch-l4t-r36.2.0) zaten içerir:
+#   - PyTorch (CUDA destekli, JetPack uyumlu)
+#   - torchvision
+#   - CUDA, cuDNN, TensorRT
+#   - ROS2 Humble
+#   - OpenCV (CUDA destekli)
+
+# ── YOLO ──
+ultralytics>=8.0.0          # YOLOv8 — PyTorch'u base image'dan kullanır
+                             # TensorRT export: model.export(format='engine')
+
+# ── Serial ──
+pyserial>=3.5               # STM32 UART haberleşme
+
+# ── Görüntü işleme (ek) ──
+numpy>=1.23.0               # OpenCV ile zaten gelir ama pin edelim
+
+# ── Template oluşturma (opsiyonel, sadece bir kere) ──
+# Pillow>=9.0.0             # generate_templates.py için — gerekirse uncomment et
+
+# ══════════════════════════════════════════════
+# Jetson'a ÖZGÜ — ayrıca apt ile yüklenenler:
+#
+# sudo apt install -y \
+#   ros-humble-cv-bridge \
+#   ros-humble-image-transport \
+#   ros-humble-rosbridge-suite \
+#   ros-humble-joy \
+#   ros-humble-tf2-ros \
+#   ros-humble-robot-state-publisher \
+#   ros-humble-joint-state-publisher \
+#   ros-humble-v4l2-camera \
+#   ros-humble-rplidar-ros \
+#   ros-humble-robot-localization
+# ══════════════════════════════════════════════

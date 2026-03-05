@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  ika_robot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ika_robot:latest
+    container_name: ika_robot
+
+    # Jetson GPU erişimi
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - ROS_DOMAIN_ID=42
+      - DISPLAY=${DISPLAY}
+
+    # Donanım erişimi
+    privileged: true
+    network_mode: host
+
+    volumes:
+      # Cihaz erişimi (kamera, UART, LiDAR)
+      - /dev:/dev
+      # X11 (opsiyonel, GUI gerekirse)
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      # Kayıtlar — host'ta kalıcı
+      - ./recordings:/ros2_ws/recordings
+      # Weights — host'tan güncelleme yapılabilir
+      - ./weights:/ros2_ws/weights
+
+    # Foxglove WebSocket
+    # (network_mode: host olduğu için ports gereksiz ama dokümantasyon için)
+    # ports:
+    #   - "9090:9090"
+
+    # Varsayılan komut
+    command: >
+      ros2 launch ika_bringup full_system.launch.py
+        use_cameras:=true
+        use_lidar:=true
+        use_stm32:=true
+
+    # Otomatik yeniden başlatma
+    restart: unless-stopped
+
+    # Sağlık kontrolü
+    healthcheck:
+      test: ["CMD", "bash", "-c", "ros2 topic list | grep -q /system/mode"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # ── Opsiyonel: Sadece manuel koşu ──
+  # docker compose up ika_manual
+  ika_manual:
+    extends:
+      service: ika_robot
+    container_name: ika_manual
+    command: >
+      ros2 launch ika_bringup manual_run.launch.py
+        use_cameras:=true
+        use_lidar:=true
+        use_stm32:=true
+    profiles:
+      - manual
+
+  # ── Opsiyonel: Sadece otonom koşu ──
+  # docker compose --profile autonomous up ika_autonomous
+  ika_autonomous:
+    extends:
+      service: ika_robot
+    container_name: ika_autonomous
+    command: >
+      ros2 launch ika_bringup autonomous_run.launch.py
+        use_cameras:=true
+        use_lidar:=true
+        use_stm32:=true
+    profiles:
+      - autonomous
