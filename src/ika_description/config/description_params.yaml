@@ -1,0 +1,11 @@
+robot_state_publisher:
+  ros__parameters:
+    # URDF xacro'dan otomatik parse edilir (launch dosyasında)
+    use_sim_time: false
+
+joint_state_publisher:
+  ros__parameters:
+    rate: 30
+    # Gimbal joint'leri için source_list
+    source_list:
+      - "/joint_states"

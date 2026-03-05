@@ -1,0 +1,381 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="ika_robot">
+
+  <!-- ══════════════════════════════════════════
+       PARAMETRELER — gerçek araç ölçülerine göre güncelle
+       Şartname: boy 1.2-2.0m, genişlik 0.75-1.2m, yükseklik min 0.4m
+       ══════════════════════════════════════════ -->
+
+  <!-- Şasi -->
+  <xacro:property name="chassis_length" value="1.4"/>
+  <xacro:property name="chassis_width" value="0.9"/>
+  <xacro:property name="chassis_height" value="0.25"/>
+  <xacro:property name="chassis_mass" value="40.0"/>
+  <xacro:property name="ground_clearance" value="0.18"/>
+
+  <!-- Teker -->
+  <xacro:property name="wheel_radius" value="0.15"/>
+  <xacro:property name="wheel_width" value="0.08"/>
+  <xacro:property name="wheel_mass" value="2.0"/>
+  <xacro:property name="wheel_base" value="0.9"/>
+  <xacro:property name="wheel_track" value="${chassis_width + wheel_width}"/>
+
+  <!-- Kameralar -->
+  <xacro:property name="camera_size" value="0.05"/>
+  <xacro:property name="camera_mass" value="0.1"/>
+
+  <!-- LiDAR -->
+  <xacro:property name="lidar_radius" value="0.035"/>
+  <xacro:property name="lidar_height" value="0.05"/>
+  <xacro:property name="lidar_mass" value="0.2"/>
+
+  <!-- Gimbal -->
+  <xacro:property name="gimbal_mass" value="0.5"/>
+
+  <!-- Renkler -->
+  <xacro:property name="chassis_color" value="0.2 0.2 0.2 1.0"/>
+  <xacro:property name="wheel_color" value="0.1 0.1 0.1 1.0"/>
+  <xacro:property name="camera_color" value="0.0 0.0 0.8 1.0"/>
+  <xacro:property name="lidar_color" value="0.8 0.0 0.0 1.0"/>
+  <xacro:property name="gimbal_color" value="0.0 0.6 0.0 1.0"/>
+
+  <!-- ══════════════════════════════════════════
+       MAKROLAR
+       ══════════════════════════════════════════ -->
+
+  <!-- İnertia hesaplama makroları -->
+  <xacro:macro name="box_inertia" params="m x y z">
+    <inertial>
+      <mass value="${m}"/>
+      <inertia
+        ixx="${m*(y*y+z*z)/12}" ixy="0" ixz="0"
+        iyy="${m*(x*x+z*z)/12}" iyz="0"
+        izz="${m*(x*x+y*y)/12}"/>
+    </inertial>
+  </xacro:macro>
+
+  <xacro:macro name="cylinder_inertia" params="m r h">
+    <inertial>
+      <mass value="${m}"/>
+      <inertia
+        ixx="${m*(3*r*r+h*h)/12}" ixy="0" ixz="0"
+        iyy="${m*(3*r*r+h*h)/12}" iyz="0"
+        izz="${m*r*r/2}"/>
+    </inertial>
+  </xacro:macro>
+
+  <!-- Teker makrosu -->
+  <xacro:macro name="wheel" params="prefix x_pos y_pos">
+    <link name="${prefix}_wheel_link">
+      <visual>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+        </geometry>
+        <material name="${prefix}_wheel_mat">
+          <color rgba="${wheel_color}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+        </geometry>
+      </collision>
+      <xacro:cylinder_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_width}"/>
+    </link>
+
+    <joint name="${prefix}_wheel_joint" type="continuous">
+      <parent link="chassis_link"/>
+      <child link="${prefix}_wheel_link"/>
+      <origin xyz="${x_pos} ${y_pos} 0.0" rpy="${-pi/2} 0 0"/>
+      <axis xyz="0 0 1"/>
+      <dynamics damping="0.1" friction="0.5"/>
+    </joint>
+  </xacro:macro>
+
+  <!-- Kamera makrosu -->
+  <xacro:macro name="camera_sensor" params="name x y z roll pitch yaw">
+    <link name="${name}_camera_link">
+      <visual>
+        <geometry>
+          <box size="${camera_size} ${camera_size*1.5} ${camera_size}"/>
+        </geometry>
+        <material name="${name}_cam_mat">
+          <color rgba="${camera_color}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <box size="${camera_size} ${camera_size*1.5} ${camera_size}"/>
+        </geometry>
+      </collision>
+      <xacro:box_inertia m="${camera_mass}" x="${camera_size}" y="${camera_size*1.5}" z="${camera_size}"/>
+    </link>
+
+    <joint name="${name}_camera_joint" type="fixed">
+      <parent link="chassis_link"/>
+      <child link="${name}_camera_link"/>
+      <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}"/>
+    </joint>
+
+    <!-- Optik frame (Z=ileri, X=sağ, Y=aşağı — kamera konvansiyonu) -->
+    <link name="${name}_camera_optical_link"/>
+    <joint name="${name}_camera_optical_joint" type="fixed">
+      <parent link="${name}_camera_link"/>
+      <child link="${name}_camera_optical_link"/>
+      <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+    </joint>
+  </xacro:macro>
+
+  <!-- ══════════════════════════════════════════
+       BASE LINK
+       ══════════════════════════════════════════ -->
+
+  <link name="base_link"/>
+
+  <!-- base_link → base_footprint (zemin seviyesi) -->
+  <link name="base_footprint"/>
+  <joint name="base_footprint_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="base_footprint"/>
+    <origin xyz="0 0 ${-(ground_clearance + wheel_radius)}" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ══════════════════════════════════════════
+       ŞASİ
+       ══════════════════════════════════════════ -->
+
+  <link name="chassis_link">
+    <visual>
+      <geometry>
+        <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
+      </geometry>
+      <material name="chassis_mat">
+        <color rgba="${chassis_color}"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
+      </geometry>
+    </collision>
+    <xacro:box_inertia m="${chassis_mass}" x="${chassis_length}" y="${chassis_width}" z="${chassis_height}"/>
+  </link>
+
+  <joint name="chassis_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="chassis_link"/>
+    <origin xyz="0 0 ${chassis_height/2}" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ══════════════════════════════════════════
+       TEKERLEKLER (4WD diferansiyel)
+       ══════════════════════════════════════════ -->
+
+  <xacro:wheel prefix="front_left"
+    x_pos="${wheel_base/2}" y_pos="${wheel_track/2}"/>
+
+  <xacro:wheel prefix="front_right"
+    x_pos="${wheel_base/2}" y_pos="${-wheel_track/2}"/>
+
+  <xacro:wheel prefix="rear_left"
+    x_pos="${-wheel_base/2}" y_pos="${wheel_track/2}"/>
+
+  <xacro:wheel prefix="rear_right"
+    x_pos="${-wheel_base/2}" y_pos="${-wheel_track/2}"/>
+
+  <!-- ══════════════════════════════════════════
+       KAMERALAR
+       ══════════════════════════════════════════ -->
+
+  <!-- İleri kamera — şasinin ön yüzeyinde, hafif yukarıda -->
+  <xacro:camera_sensor name="front"
+    x="${chassis_length/2}" y="0" z="${chassis_height/2 + 0.05}"
+    roll="0" pitch="0" yaw="0"/>
+
+  <!-- Geri kamera — şasinin arka yüzeyinde -->
+  <xacro:camera_sensor name="rear"
+    x="${-chassis_length/2}" y="0" z="${chassis_height/2 + 0.05}"
+    roll="0" pitch="0" yaw="${pi}"/>
+
+  <!-- ══════════════════════════════════════════
+       LiDAR
+       ══════════════════════════════════════════ -->
+
+  <link name="lidar_link">
+    <visual>
+      <geometry>
+        <cylinder radius="${lidar_radius}" length="${lidar_height}"/>
+      </geometry>
+      <material name="lidar_mat">
+        <color rgba="${lidar_color}"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="${lidar_radius}" length="${lidar_height}"/>
+      </geometry>
+    </collision>
+    <xacro:cylinder_inertia m="${lidar_mass}" r="${lidar_radius}" h="${lidar_height}"/>
+  </link>
+
+  <joint name="lidar_joint" type="fixed">
+    <parent link="chassis_link"/>
+    <child link="lidar_link"/>
+    <!-- Şasinin üstünde, ortada -->
+    <origin xyz="0.1 0 ${chassis_height/2 + lidar_height/2 + 0.02}" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ══════════════════════════════════════════
+       IMU
+       ══════════════════════════════════════════ -->
+
+  <link name="imu_link">
+    <visual>
+      <geometry>
+        <box size="0.03 0.03 0.01"/>
+      </geometry>
+      <material name="imu_mat">
+        <color rgba="0.8 0.8 0.0 1.0"/>
+      </material>
+    </visual>
+    <inertial>
+      <mass value="0.02"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
+    </inertial>
+  </link>
+
+  <joint name="imu_joint" type="fixed">
+    <parent link="chassis_link"/>
+    <child link="imu_link"/>
+    <!-- Ağırlık merkezine yakın, şasi içinde -->
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ══════════════════════════════════════════
+       LAZER GİMBAL (PAN-TILT + NİŞAN KAMERASI + LAZER)
+       ══════════════════════════════════════════ -->
+
+  <!-- Gimbal base — şasinin üstünde sabit -->
+  <link name="gimbal_base_link">
+    <visual>
+      <geometry>
+        <cylinder radius="0.04" length="0.03"/>
+      </geometry>
+      <material name="gimbal_base_mat">
+        <color rgba="0.4 0.4 0.4 1.0"/>
+      </material>
+    </visual>
+    <inertial>
+      <mass value="0.2"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <joint name="gimbal_base_joint" type="fixed">
+    <parent link="chassis_link"/>
+    <child link="gimbal_base_link"/>
+    <!-- Şasinin üstünde, önde -->
+    <origin xyz="${chassis_length/4} 0 ${chassis_height/2 + 0.05}" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Gimbal pan (yaw) -->
+  <link name="gimbal_pan_link">
+    <visual>
+      <geometry>
+        <box size="0.06 0.04 0.04"/>
+      </geometry>
+      <material name="gimbal_pan_mat">
+        <color rgba="${gimbal_color}"/>
+      </material>
+    </visual>
+    <inertial>
+      <mass value="0.15"/>
+      <inertia ixx="0.00005" ixy="0" ixz="0" iyy="0.00005" iyz="0" izz="0.00005"/>
+    </inertial>
+  </link>
+
+  <joint name="gimbal_pan_joint" type="revolute">
+    <parent link="gimbal_base_link"/>
+    <child link="gimbal_pan_link"/>
+    <origin xyz="0 0 0.03" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-0.785" upper="0.785" effort="5.0" velocity="2.0"/>
+  </joint>
+
+  <!-- Gimbal tilt (pitch) -->
+  <link name="gimbal_tilt_link">
+    <visual>
+      <geometry>
+        <box size="0.08 0.04 0.04"/>
+      </geometry>
+      <material name="gimbal_tilt_mat">
+        <color rgba="${gimbal_color}"/>
+      </material>
+    </visual>
+    <inertial>
+      <mass value="0.15"/>
+      <inertia ixx="0.00005" ixy="0" ixz="0" iyy="0.00005" iyz="0" izz="0.00005"/>
+    </inertial>
+  </link>
+
+  <joint name="gimbal_tilt_joint" type="revolute">
+    <parent link="gimbal_pan_link"/>
+    <child link="gimbal_tilt_link"/>
+    <origin xyz="0.03 0 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.524" upper="0.524" effort="5.0" velocity="2.0"/>
+  </joint>
+
+  <!-- Nişan kamerası — gimbal tilt üzerinde -->
+  <link name="targeting_camera_link">
+    <visual>
+      <geometry>
+        <box size="0.04 0.06 0.04"/>
+      </geometry>
+      <material name="targeting_cam_mat">
+        <color rgba="${camera_color}"/>
+      </material>
+    </visual>
+    <inertial>
+      <mass value="${camera_mass}"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
+    </inertial>
+  </link>
+
+  <joint name="targeting_camera_joint" type="fixed">
+    <parent link="gimbal_tilt_link"/>
+    <child link="targeting_camera_link"/>
+    <origin xyz="0.04 0 0.01" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Targeting kamera optik frame -->
+  <link name="targeting_camera_optical_link"/>
+  <joint name="targeting_camera_optical_joint" type="fixed">
+    <parent link="targeting_camera_link"/>
+    <child link="targeting_camera_optical_link"/>
+    <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+  </joint>
+
+  <!-- Lazer — gimbal tilt üzerinde, kameranın yanında -->
+  <link name="laser_link">
+    <visual>
+      <geometry>
+        <cylinder radius="0.008" length="0.06"/>
+      </geometry>
+      <material name="laser_mat">
+        <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <inertial>
+      <mass value="0.05"/>
+      <inertia ixx="0.000001" ixy="0" ixz="0" iyy="0.000001" iyz="0" izz="0.000001"/>
+    </inertial>
+  </link>
+
+  <joint name="laser_joint" type="fixed">
+    <parent link="gimbal_tilt_link"/>
+    <child link="laser_link"/>
+    <origin xyz="0.04 0 -0.015" rpy="0 ${pi/2} 0"/>
+  </joint>
+
+</robot>
