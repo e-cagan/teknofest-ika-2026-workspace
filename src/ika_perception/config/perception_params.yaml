@@ -48,7 +48,7 @@ cone_detector_node:
     rate: 15.0
 
     # YOLO model
-    model_path: ""                      # Boşsa default yol kullanılır
+    model_path: "weights/best.pt"                      # Boşsa default yol kullanılır
     confidence_threshold: 0.35
     iou_threshold: 0.45
     device: "0"                         # GPU index (Jetson: "0")

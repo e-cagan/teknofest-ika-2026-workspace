@@ -18,7 +18,7 @@ from ultralytics import YOLO
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', default='/ros2_ws/weights/cone_detector.pt')
+    parser.add_argument('--model', default='/ika_ws/weights/best.pt')
     parser.add_argument('--imgsz', type=int, default=640)
     parser.add_argument('--half', action='store_true', default=True,
                         help='FP16 quantization (Jetson icin onerilen)')
