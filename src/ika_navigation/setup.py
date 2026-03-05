@@ -1,4 +1,6 @@
 from setuptools import find_packages, setup
+import os
+from glob import glob
 
 package_name = 'ika_navigation'
 
@@ -10,6 +12,8 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),
+        (os.path.join('share', package_name, 'launch'), glob('launch/*.py')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -20,6 +24,11 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'path_follower_node = ika_navigation.path_follower_node:main',
+            'cone_avoidance_node = ika_navigation.cone_avoidance_node:main',
+            'sliding_obstacle_planner_node = ika_navigation.sliding_obstacle_planner_node:main',
+            'slope_controller_node = ika_navigation.slope_controller_node:main',
+            'speed_controller_node = ika_navigation.speed_controller_node:main',
         ],
     },
 )

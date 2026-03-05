@@ -1,0 +1,104 @@
+# ══════════════════════════════════════════════
+#  BARİYER TAKİBİ (YOL MERKEZİNDE KALMA)
+# ══════════════════════════════════════════════
+path_follower_node:
+  ros__parameters:
+    lane_center_topic: "/perception/lane_center"
+    cmd_vel_topic: "/cmd_vel_nav"
+    rate: 20.0
+
+    # PID — lateral (yol merkezine hizalama)
+    lateral_kp: 1.2
+    lateral_ki: 0.0
+    lateral_kd: 0.3
+
+    # PID — heading (yol yönüne hizalama)
+    heading_kp: 1.5
+    heading_ki: 0.0
+    heading_kd: 0.2
+
+    # Hız profili
+    default_linear_speed: 0.5     # m/s — normal ilerleme hızı
+    slow_linear_speed: 0.3        # m/s — engel/viraj yakınında
+    max_angular_speed: 1.5        # rad/s — dönüş limiti
+
+    # Güvenlik
+    min_barrier_distance_m: 0.5   # Bariyere bu kadar yaklaşırsa yavaşla
+    stop_distance_m: 0.3          # Bariyere bu kadar yaklaşırsa dur
+
+# ══════════════════════════════════════════════
+#  KONİ SLALOM
+# ══════════════════════════════════════════════
+cone_avoidance_node:
+  ros__parameters:
+    cones_topic: "/perception/cones"
+    cmd_vel_topic: "/cmd_vel_nav"
+    rate: 15.0
+
+    # Kaçınma parametreleri
+    avoidance_distance_m: 2.0     # Bu mesafede kaçınma başlat
+    safety_margin_m: 0.4          # Koniden minimum mesafe
+    approach_speed: 0.4           # m/s — konilere yaklaşırken
+    pass_speed: 0.3               # m/s — konilerin arasından geçerken
+
+    # Gap-based navigation
+    min_gap_width_m: 1.2          # Minimum geçiş boşluğu (araç genişliği + pay)
+    vehicle_width_m: 1.0
+
+# ══════════════════════════════════════════════
+#  KAYAR ENGEL GEÇİŞ PLANLAMA
+# ══════════════════════════════════════════════
+sliding_obstacle_planner_node:
+  ros__parameters:
+    obstacle_topic: "/perception/sliding_obstacle"
+    cmd_vel_topic: "/cmd_vel_nav"
+    rate: 20.0
+
+    # Geçiş stratejisi
+    wait_distance_m: 3.0          # Engelden bu mesafede dur ve bekle
+    go_gap_threshold_m: 1.5       # Bu kadar boşluk varsa geç
+    go_speed: 0.6                 # m/s — geçiş hızı
+    vehicle_width_m: 1.0
+    safety_margin_m: 0.3
+
+# ══════════════════════════════════════════════
+#  EĞİM KONTROLÜ
+# ══════════════════════════════════════════════
+slope_controller_node:
+  ros__parameters:
+    imu_topic: "/imu/data"
+    cmd_vel_topic: "/cmd_vel_nav"
+    rate: 20.0
+
+    # Dik eğim tespiti (%45 = ~24.2 derece)
+    steep_pitch_threshold_deg: 20.0   # Bu açıdan sonra "dik eğimdeyiz"
+    steep_pitch_max_deg: 30.0         # Güvenlik — bu üstünde dur
+
+    # Yan eğim (%20 = ~11.3 derece)
+    lateral_roll_threshold_deg: 8.0   # Yan eğim uyarısı
+    lateral_roll_max_deg: 15.0        # Güvenlik — dur
+
+    # Stop noktası bekleme (şartname: en az 2s)
+    stop_hold_duration_sec: 2.5       # 2.5s — biraz pay ile
+
+    # Hız profilleri
+    climb_speed: 0.3                  # m/s — tırmanma hızı
+    descent_speed: 0.2                # m/s — iniş hızı
+    lateral_slope_speed: 0.3          # m/s — yan eğim hızı
+
+# ══════════════════════════════════════════════
+#  HIZLANMA PARKURU
+# ══════════════════════════════════════════════
+speed_controller_node:
+  ros__parameters:
+    cmd_vel_topic: "/cmd_vel_nav"
+    rate: 20.0
+
+    # Hızlanma
+    sprint_speed: 4.0               # m/s — maksimum hız
+    acceleration_mps2: 2.0          # m/s² — ivme
+
+    # Frenleme (10m güvenli durma mesafesi)
+    braking_distance_m: 8.0         # Bu mesafede frenlemeye başla (2m pay)
+    braking_deceleration_mps2: 3.0  # m/s² — frenleme ivmesi
+    sprint_distance_m: 30.0         # Toplam sprint mesafesi
