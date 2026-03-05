@@ -17,3 +17,12 @@ __pycache__/
 .vscode/
 .idea/
 .DS_Store
+
+# Virtual environment and YOLO
+.env
+venv/
+runs/
+datasets/
+yolov8n.pt
+yolo26n.pt
+*.engine

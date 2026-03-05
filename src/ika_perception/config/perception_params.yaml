@@ -49,7 +49,7 @@ cone_detector_node:
 
     # YOLO model
     model_path: ""                      # Boşsa default yol kullanılır
-    confidence_threshold: 0.5
+    confidence_threshold: 0.35
     iou_threshold: 0.45
     device: "0"                         # GPU index (Jetson: "0")
     imgsz: 640
