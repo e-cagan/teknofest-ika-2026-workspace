@@ -71,7 +71,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # ── Stage 3: Python bağımlılıkları ──
+# ── Stage 3: Python bağımlılıkları ──
 COPY requirements.txt /tmp/requirements.txt
+
+# Önce ultralytics'i torch'a dokunmaması için --no-deps ile tek başına kuruyoruz
+RUN pip3 install --no-cache-dir --no-deps ultralytics>=8.0.0
+
+# Sonra geri kalan alt bağımlılıkları (pandas, matplotlib vb.) kuruyoruz
 RUN pip3 install --no-cache-dir -r /tmp/requirements.txt \
     && rm /tmp/requirements.txt
 

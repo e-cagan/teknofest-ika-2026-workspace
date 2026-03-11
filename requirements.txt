@@ -6,7 +6,6 @@
 # Bunları pip ile YENİDEN YÜKLEME — Jetson CUDA desteği bozulur.
 
 # Ultralytics — torch bağımlılığını ATLA
-ultralytics>=8.0.0 --no-deps
 
 # Ultralytics'in torch HARİÇ gerçek bağımlılıkları
 matplotlib>=3.3.0
