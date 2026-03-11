@@ -73,7 +73,7 @@ class ConeDetectorNode(Node):
         if YOLO_AVAILABLE:
             model_path = self.get_parameter('model_path').value
             if not model_path:
-                model_path = 'yolov8n.pt'  # Default — fine-tune edilmiş model ile değiştirilecek
+                model_path = 'weights/best.pt'  # Default — fine-tune edilmiş model ile değiştirilecek
             try:
                 self.model = YOLO(model_path)
                 device = self.get_parameter('device').value
