@@ -67,8 +67,8 @@ def generate_launch_description():
 
     # Foxglove bridge
     foxglove = Node(
-        package='rosbridge_server', executable='rosbridge_websocket',
-        name='rosbridge_websocket',
+        package='foxglove_bridge', executable='foxglove_bridge',
+        name='foxglove_bridge',
         parameters=[os.path.join(bringup_share, 'config', 'foxglove_bridge.yaml')],
         output='log',
     )

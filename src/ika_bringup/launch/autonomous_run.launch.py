@@ -185,7 +185,7 @@ def generate_launch_description():
     foxglove_bridge = Node(
         package='rosbridge_server',
         executable='rosbridge_websocket',
-        name='rosbridge_websocket',
+        name='foxglove_bridge',
         parameters=[
             os.path.join(bringup_share, 'config', 'foxglove_bridge.yaml')
         ],
