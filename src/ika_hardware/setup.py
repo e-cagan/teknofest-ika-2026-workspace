@@ -27,6 +27,8 @@ setup(
     entry_points={
         'console_scripts': [
             'stm32_bridge_node = ika_hardware.stm32_bridge_node:main',
+            'fake_sensors_node = ika_hardware.fake_sensors_node:main',
+            'fake_stm32_node = ika_hardware.fake_stm32_node:main',
         ],
     },
 )

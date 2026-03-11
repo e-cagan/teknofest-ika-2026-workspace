@@ -1,0 +1,19 @@
+fake_sensors_node:
+  ros__parameters:
+    camera_fps: 15.0
+    lidar_hz: 10.0
+    imu_hz: 50.0
+    image_width: 640
+    image_height: 480
+    sim_pitch_deg: 0.0
+    sim_roll_deg: 0.0
+    sim_corridor_width: 3.0
+    sim_cone_count: 5
+    sim_sliding_obstacle: false
+
+fake_stm32_node:
+  ros__parameters:
+    wheel_base: 0.5
+    max_speed: 2.0
+    update_rate: 50.0
+    battery_voltage: 24.0

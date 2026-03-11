@@ -233,7 +233,7 @@ class SlidingObstacleDetectorNode(Node):
             obs_msg.velocity_mps = vel_y
             obs_msg.width_m = self.obstacle_width
             obs_msg.gap_width_m = max_gap
-            obs_msg.passage_clear = max_gap >= required
+            obs_msg.passage_clear = bool(max_gap >= required)
             obs_msg.time_to_clear_sec = time_to_clear
 
         else:
