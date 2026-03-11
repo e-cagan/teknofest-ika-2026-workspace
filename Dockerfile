@@ -3,7 +3,6 @@
 # ══════════════════════════════════════════════════════════════
 
 # ── Stage 1: Base (NVIDIA'nın Hazır PyTorch + CUDA İmajı) ──
-# Bu imajda PyTorch (GPU), Torchvision ve CUDA sürücüleri HAZIRDIR.
 FROM dustynv/l4t-pytorch:r36.2.0 AS base
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -31,7 +30,6 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o 
 
 # ── Stage 3: ROS 2 Paketleri ve Sistem Bağımlılıkları ──
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    # ROS 2 Temel ve Perception Paketleri (ros:humble-perception içeriği)
     ros-humble-ros-base \
     ros-humble-cv-bridge \
     ros-humble-image-transport \
@@ -49,7 +47,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-humble-xacro \
     ros-humble-urdf \
     ros-humble-diagnostic-msgs \
-    # Build Araçları
     python3-colcon-common-extensions \
     python3-rosdep \
     udev \
@@ -58,32 +55,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # ── Stage 4: Python Zırhlama ve Bağımlılıklar ──
 
-# ZIRH 1: Temel paketleri önden kur
-RUN pip3 install --no-cache-dir typing_extensions sympy networkx jinja2 fsspec mpmath
+# ZIRH 1 & 2: Temel paketleri ve Torch güncellemelerini RESMİ index üzerinden yapıyoruz.
+# --index-url eklenerek hatalı yönlendirmeler baypas edildi.
+RUN pip3 install --no-cache-dir --index-url https://pypi.org/simple \
+    typing_extensions sympy networkx jinja2 fsspec mpmath
 
-# ZIRH 2: PyTorch'un GPU desteğini teyit et/güncelle (Base imajda var ama garantiye alıyoruz)
-RUN pip3 install --no-cache-dir torch torchvision \
-    --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v60/dp/pt
-
-# requirements.txt içindeki paketleri kur
+# requirements.txt içindeki paketleri kur (yine resmi index üzerinden)
 COPY requirements.txt /tmp/requirements.txt
-RUN pip3 install --no-cache-dir -r /tmp/requirements.txt \
+RUN pip3 install --no-cache-dir --index-url https://pypi.org/simple -r /tmp/requirements.txt \
     && rm /tmp/requirements.txt
 
 # ZIRH 3: YOLO ve thop paketlerini EN SON, torch'a dokunmadan (--no-deps) kur
-RUN pip3 install --no-cache-dir --no-deps ultralytics>=8.0.0 thop>=0.1.1
+RUN pip3 install --no-cache-dir --index-url https://pypi.org/simple --no-deps ultralytics>=8.0.0 thop>=0.1.1
 
 # ── Stage 5: Ağırlıklar, Kaynak Kod ve Build ──
 COPY weights/ /ros2_ws/weights/
 COPY src/ /ros2_ws/src/
 
-# rosdep ile eksik bağımlılıkları tamamla
 RUN . /opt/ros/humble/setup.sh && \
     rosdep init || echo "already init" && \
     rosdep update && \
     rosdep install --from-paths src --ignore-src -r -y 2>/dev/null || true
 
-# Build (RAM koruması için 2 worker ile sınırlı)
 RUN . /opt/ros/humble/setup.sh && \
     colcon build \
       --symlink-install \
