@@ -16,6 +16,7 @@
 - [Hızlı Başlangıç](#hızlı-başlangıç)
 - [Detaylı Kurulum](#detaylı-kurulum)
 - [Launch Dosyaları](#launch-dosyaları)
+- [Dry-Run Test](#dry-run-test-donanımsız)
 - [UART Protokolü](#uart-protokolü)
 - [Algılama Pipeline'ı](#algılama-pipelineı)
 - [Otonom Sürüş](#otonom-sürüş)
@@ -52,7 +53,7 @@ Her iki koşuda parkur 11 aşamadan oluşur: su geçişi, çakıllı yol, yan e�
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
 │                        FOXGLOVE STUDIO (UI)                         │
-│                     rosbridge_websocket :9090                       │
+│                     foxglove_bridge :8765                           │
 └────────────────────────────────┬─────────────────────────────────────┘
                                  │ WebSocket
 ┌────────────────────────────────┼─────────────────────────────────────┐
@@ -336,7 +337,7 @@ Joystick layout (Logitech F710 / Xbox):
 
 ```bash
 # Repository klonla
-git clone https://github.com/REPO_URL/ika_ws.git
+git clone https://github.com/e-cagan/ika_ws.git
 cd ika_ws
 
 # ROS2 bağımlılıkları
@@ -344,6 +345,7 @@ sudo apt install -y \
   ros-humble-cv-bridge \
   ros-humble-image-transport \
   ros-humble-rosbridge-suite \
+  ros-humble-foxglove-bridge \
   ros-humble-joy \
   ros-humble-tf2-ros \
   ros-humble-robot-state-publisher \
@@ -397,21 +399,40 @@ ros2 launch ika_bringup test_hardware.launch.py
 
 ### Jetson Orin Nano Dağıtımı
 
+Docker ile dağıtım önerilir — tüm bağımlılıklar container içinde çözülür:
+
+```bash
+# Jetson ilk kurulum (bir kere)
+scp docker/jetson_first_setup.sh cagan@JETSON_IP:~/
+ssh cagan@JETSON_IP "bash ~/jetson_first_setup.sh"
+
+# Laptoptan deploy
+./deploy.sh
+
+# Sonraki güncellemeler
+./deploy_quick.sh
+```
+
+Docker kullanmadan doğrudan kurulum (alternatif):
+
 ```bash
 # Jetson'a özgü paketler
 sudo apt install -y \
   ros-humble-rplidar-ros \
   ros-humble-v4l2-camera \
-  ros-humble-robot-localization
+  ros-humble-robot-localization \
+  ros-humble-foxglove-bridge
 
 # Udev kuralları (USB cihaz sabit isimleri)
 sudo cp docker/99-ika.rules /etc/udev/rules.d/
 sudo udevadm control --reload-rules && sudo udevadm trigger
 
-# YOLO TensorRT export (ilk kez, 5-15 dk)
+# YOLO TensorRT export (Jetson'da, ilk kez, 5-15 dk)
 python3 -c "from ultralytics import YOLO; \
   YOLO('weights/cone_detector.pt').export(format='engine', imgsz=640, half=True)"
 ```
+
+**Not:** YOLO eğitimi ayrı dizinde (`ika_yolo_training/`) yapılır. Bu dizin workspace içindeyse `COLCON_IGNORE` dosyası ile colcon taramasından hariç tutulmalıdır.
 
 ---
 
@@ -419,12 +440,15 @@ python3 -c "from ultralytics import YOLO; \
 
 | Launch | Açıklama | Donanım Gerekli |
 |---|---|---|
-| `test_hardware.launch.py` | Donanım testi — teleop + safety + Foxglove | Hayır |
+| `test_hardware.launch.py` | Donanım testi — teleop + safety + Foxglove | Opsiyonel |
 | `hardware.launch.py` | Tüm sensör ve aktüatör node'ları | Evet (opsiyonel) |
 | `safety.launch.py` | Güvenlik katmanı | Hayır |
 | `manual_run.launch.py` | 1. koşu — manuel kontrol | Evet |
 | `autonomous_run.launch.py` | 2. koşu — tam otonom | Evet |
 | `full_system.launch.py` | Tüm node'lar — runtime mod geçişi | Evet |
+| `dry_run_teleop.launch.py` | Dry-run: fake sensörler + teleop + Foxglove | Hayır |
+| `dry_run_perception.launch.py` | Dry-run: fake sensörler + algılama pipeline | Hayır |
+| `dry_run_full.launch.py` | Dry-run: tüm sistem fake donanımla | Hayır |
 
 ### Launch Arguments
 
@@ -454,6 +478,42 @@ ros2 service call /system/set_mode ika_msgs/srv/SetMode "{requested_mode: 0}"
 # Pas geçme (aşama 4 = dik engel)
 ros2 service call /system/skip_stage ika_msgs/srv/SkipStage "{stage_id: 4}"
 ```
+
+---
+
+## Dry-Run Test (Donanımsız)
+
+Donanım olmadan laptoptan tüm pipeline'ı test etmek için fake sensör node'ları ve dry-run launch dosyaları mevcuttur. `fake_sensors_node` sahte kamera görüntüleri (bariyerler, koniler, tabela, hedef), sahte LiDAR (3m koridor) ve sahte IMU yayınlar. `fake_stm32_node` cmd_vel alıp sahte odometri + TF + heartbeat üretir.
+
+### Kullanım
+
+```bash
+# Teleop testi — fake sensörler + klavye kontrol + Foxglove
+# Terminal 1:
+ros2 launch ika_bringup dry_run_teleop.launch.py
+# Terminal 2:
+ros2 run ika_teleop teleop_keyboard_node
+# Foxglove: ws://localhost:8765
+
+# Perception testi — fake kameralar + algılama pipeline
+ros2 launch ika_bringup dry_run_perception.launch.py
+# Ayrı terminalde:
+ros2 topic echo /perception/stage_info
+ros2 topic echo /perception/lane_center
+ros2 topic echo /perception/cones
+
+# Tam sistem — tüm node'lar fake donanımla
+# Terminal 1:
+ros2 launch ika_bringup dry_run_full.launch.py
+# Terminal 2:
+ros2 run ika_teleop teleop_keyboard_node
+# Terminal 3 — otonom moda geç:
+ros2 service call /system/set_mode ika_msgs/srv/SetMode "{requested_mode: 2}"
+```
+
+### Simülasyon Parametreleri
+
+Dry-run config dosyasından eğim, koni sayısı, kayar engel gibi senaryolar değiştirilebilir: `ika_bringup/config/dry_run_params.yaml`
 
 ---
 
@@ -756,7 +816,7 @@ docker compose --profile manual up ika_manual
 docker compose --profile autonomous up ika_autonomous
 
 # Debug shell
-docker compose run --rm ika_robot bash
+docker compose --profile debug run --rm ika_shell
 ```
 
 ### Docker Compose Servisleri
@@ -766,6 +826,7 @@ docker compose run --rm ika_robot bash
 | `ika_robot` | (default) | `full_system.launch.py` |
 | `ika_manual` | `manual` | `manual_run.launch.py` |
 | `ika_autonomous` | `autonomous` | `autonomous_run.launch.py` |
+| `ika_shell` | `debug` | `bash` (interaktif shell) |
 
 ### Volume Mount'lar
 
@@ -774,6 +835,45 @@ docker compose run --rm ika_robot bash
 | `/dev` | `/dev` | USB cihaz erişimi |
 | `./recordings` | `/ros2_ws/recordings` | Koşu kayıtları (kalıcı) |
 | `./weights` | `/ros2_ws/weights` | YOLO model ağırlıkları |
+
+### Jetson'a Deploy
+
+Workspace, laptoptan Jetson'a deploy scriptleri ile aktarılır. İlk deploy ~20-30 dk (Docker image build), sonraki güncellemeler ~1-2 dk (sadece değişen dosyalar).
+
+```bash
+# İlk kurulum (Jetson'da bir kere)
+scp docker/jetson_first_setup.sh cagan@JETSON_IP:~/
+ssh cagan@JETSON_IP "bash ~/jetson_first_setup.sh"
+
+# İlk deploy (laptoptan, ~20-30 dk)
+./deploy.sh
+
+# Hızlı güncelleme (kod değişikliği sonrası, ~1-2 dk)
+./deploy_quick.sh
+
+# Jetson'da çalıştır
+ssh cagan@JETSON_IP
+cd ~/ika_ws
+docker compose up
+
+# TensorRT export (Jetson'da, ilk kez, ~5-15 dk)
+docker compose --profile debug run --rm ika_shell
+python3 -c "from ultralytics import YOLO; \
+  YOLO('/ros2_ws/weights/cone_detector.pt').export(format='engine', imgsz=640, half=True)"
+exit
+
+# Foxglove bağlantısı (laptoptan)
+# Foxglove Studio → Foxglove WebSocket → ws://JETSON_IP:8765
+```
+
+**Deploy dosyaları:**
+
+| Dosya | Konum | Açıklama |
+|---|---|---|
+| `deploy.sh` | Workspace root | Tam deploy: transfer + Docker build + udev |
+| `deploy_quick.sh` | Workspace root | Hızlı: sadece src + weights transfer + rebuild |
+| `jetson_first_setup.sh` | `docker/` | Jetson ilk kurulum: Docker, nvidia-runtime, swap |
+| `99-ika.rules` | `docker/` | Udev kuralları: USB cihaz sabit isimleri |
 
 ---
 
@@ -784,7 +884,7 @@ Foxglove Studio, ROS2 topic'lerini görselleştirmek ve operatör kontrolü içi
 ### Bağlantı
 
 1. Foxglove Studio'yu aç (web veya desktop)
-2. "Open connection" → WebSocket → `ws://JETSON_IP:9090`
+2. "Open connection" → **"Foxglove WebSocket"** seç (Rosbridge değil) → `ws://JETSON_IP:8765`
 
 ### Önerilen Panel Düzeni
 
@@ -866,9 +966,12 @@ ika_ws/
 ├── docker-compose.yml
 ├── requirements.txt
 ├── README.md
+├── deploy.sh                      # Laptoptan → Jetson tam deploy
+├── deploy_quick.sh                # Laptoptan → Jetson hızlı güncelleme
 │
 ├── docker/
 │   ├── entrypoint.sh
+│   ├── jetson_first_setup.sh      # Jetson ilk kurulum scripti
 │   └── 99-ika.rules              # Udev kuralları
 │
 ├── weights/
@@ -908,9 +1011,11 @@ ika_ws/
     │   ├── CMakeLists.txt
     │   └── package.xml
     │
-    ├── ika_hardware/               # STM32 UART bridge
+    ├── ika_hardware/               # STM32 UART bridge + test araçları
     │   ├── ika_hardware/
-    │   │   └── stm32_bridge_node.py
+    │   │   ├── stm32_bridge_node.py
+    │   │   ├── fake_sensors_node.py   # Dry-run: sahte kamera, LiDAR, IMU
+    │   │   └── fake_stm32_node.py     # Dry-run: sahte odometri, heartbeat
     │   ├── config/
     │   │   └── stm32_params.yaml
     │   ├── setup.py
@@ -992,14 +1097,18 @@ ika_ws/
     │
     └── ika_bringup/                # Launch ve konfigürasyon
         ├── config/
-        │   └── foxglove_bridge.yaml
+        │   ├── foxglove_bridge.yaml
+        │   └── dry_run_params.yaml   # Dry-run simülasyon parametreleri
         ├── launch/
         │   ├── hardware.launch.py
         │   ├── safety.launch.py
         │   ├── manual_run.launch.py
         │   ├── autonomous_run.launch.py
         │   ├── full_system.launch.py
-        │   └── test_hardware.launch.py
+        │   ├── test_hardware.launch.py
+        │   ├── dry_run_teleop.launch.py
+        │   ├── dry_run_perception.launch.py
+        │   └── dry_run_full.launch.py
         ├── setup.py
         └── package.xml
 ```
