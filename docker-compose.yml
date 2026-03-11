@@ -24,11 +24,14 @@ services:
       - ./recordings:/ros2_ws/recordings
       - ./weights:/ros2_ws/weights
 
+    # command: >
+    #  ros2 launch ika_bringup full_system.launch.py
+    #    use_cameras:=true
+    #    use_lidar:=true
+    #    use_stm32:=true
+
     command: >
-      ros2 launch ika_bringup full_system.launch.py
-        use_cameras:=true
-        use_lidar:=true
-        use_stm32:=true
+      ros2 launch ika_bringup dry_run_full.launch.py
 
     restart: unless-stopped
 
