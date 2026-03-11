@@ -20,7 +20,7 @@
 # ══════════════════════════════════════════════════════════════
 
 # ── Stage 1: Base ──
-FROM dustynv/ros:humble-pytorch-l4t-r36.2.0 AS base
+FROM dustynv/ros:humble-pytorch-l4t-r36.4.0 AS base
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ROS_DOMAIN_ID=42
