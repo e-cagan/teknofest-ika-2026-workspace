@@ -2,8 +2,8 @@
 # Hızlı deploy — sadece src ve weights transfer et, rebuild yap
 # Tam deploy'dan çok daha hızlı (1-2 dk)
 
-JETSON_USER="cagan"
-JETSON_IP="192.168.1.100"
+JETSON_USER="sebura"
+JETSON_IP="192.168.1.21"
 JETSON_DIR="/home/${JETSON_USER}/ika_ws"
 
 echo "Hızlı deploy başlıyor..."

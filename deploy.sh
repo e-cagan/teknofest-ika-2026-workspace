@@ -7,8 +7,8 @@
 set -e
 
 # ── Ayarlar (kendi değerlerinle güncelle) ──
-JETSON_USER="cagan"
-JETSON_IP="192.168.1.100"          # Jetson'un IP adresi
+JETSON_USER="sebura"
+JETSON_IP="192.168.1.21"          # Jetson'un IP adresi
 JETSON_DIR="/home/${JETSON_USER}/ika_ws"
 WORKSPACE_DIR="$HOME/ika_ws"
 
