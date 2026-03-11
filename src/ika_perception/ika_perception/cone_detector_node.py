@@ -47,7 +47,7 @@ class ConeDetectorNode(Node):
         self.declare_parameter('lidar_topic', '/scan')
         self.declare_parameter('publish_topic', '/perception/cones')
         self.declare_parameter('rate', 15.0)
-        self.declare_parameter('model_path', 'weights/best.pt')
+        self.declare_parameter('model_path', '/ros2_ws/weights/cone_detector.engine')
         self.declare_parameter('confidence_threshold', 0.5)
         self.declare_parameter('iou_threshold', 0.45)
         self.declare_parameter('device', '0')
