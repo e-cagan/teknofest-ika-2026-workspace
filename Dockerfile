@@ -42,7 +42,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # NVIDIA JetPack 6 (L4T R36.x) için özel optimize edilmiş PyTorch ve Torchvision
 # CUDA desteğinin bozulmaması için doğrudan NVIDIA sunucularından çekilir.
-RUN pip3 install --no-cache-dir --break-system-packages \
+RUN pip3 install --no-cache-dir \
     torch torchvision \
     --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v60/dp/pt
 
@@ -72,7 +72,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # ── Stage 3: Python bağımlılıkları ──
 COPY requirements.txt /tmp/requirements.txt
-RUN pip3 install --no-cache-dir --break-system-packages -r /tmp/requirements.txt \
+RUN pip3 install --no-cache-dir -r /tmp/requirements.txt \
     && rm /tmp/requirements.txt
 
 # ── Stage 4: YOLO model ağırlıkları ──
