@@ -20,7 +20,9 @@
 # ══════════════════════════════════════════════════════════════
 
 # ── Stage 1: Base ──
-FROM dustynv/ros:humble-pytorch-l4t-r36.4.0 AS base
+# ── Stage 1: Base (Resmi ROS Humble Perception İmajı) ──
+# Bu imajın içinde ROS 2, OpenCV ve temel görüntü işleme paketleri hazırdır.
+FROM ros:humble-perception AS base
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ROS_DOMAIN_ID=42
@@ -28,7 +30,22 @@ ENV SHELL=/bin/bash
 
 WORKDIR /ros2_ws
 
-# ── Stage 2: Sistem bağımlılıkları ──
+# ── Stage 2: Sistem Bağımlılıkları ve Jetson PyTorch ──
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-pip \
+    libopenblas-dev \
+    libmpi-dev \
+    libomp-dev \
+    nano \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# NVIDIA JetPack 6 (L4T R36.x) için özel optimize edilmiş PyTorch ve Torchvision
+# CUDA desteğinin bozulmaması için doğrudan NVIDIA sunucularından çekilir.
+RUN pip3 install --no-cache-dir --break-system-packages \
+    torch torchvision \
+    --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v60/dp/pt
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # ROS2 paketleri
     ros-humble-cv-bridge \
