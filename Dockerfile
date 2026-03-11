@@ -34,7 +34,7 @@ WORKDIR /ros2_ws
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pip \
     libopenblas-dev \
-    libmpi-dev \
+    libopenmpi-dev \
     libomp-dev \
     nano \
     curl \
