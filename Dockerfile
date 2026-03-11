@@ -40,12 +40,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# ZIRH 1: PyTorch'un yan paketlerini standart sunucudan al (hata vermemesi için)
-RUN pip3 install --no-cache-dir typing_extensions sympy networkx jinja2 fsspec
+# ZIRH 1: Temel paketleri önden kur
+RUN pip3 install --no-cache-dir typing_extensions sympy networkx jinja2 fsspec mpmath
 
-# ZIRH 2: SADECE NVIDIA sunucusundan CUDA destekli PyTorch'u KUR (Standart sunucu yasaklanır)
+# ZIRH 2: NVIDIA JetPack 6 uyumlu PyTorch kurulumu
+# --index-url yerine --extra-index-url kullanıyoruz ki mpmath vb. paketleri bulabilsin.
 RUN pip3 install --no-cache-dir torch torchvision \
-    --index-url https://developer.download.nvidia.com/compute/redist/jp/v60/dp/pt
+    --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v60/dp/pt
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # ROS2 paketleri
