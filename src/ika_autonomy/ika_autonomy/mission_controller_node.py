@@ -17,6 +17,7 @@ Publish:
 """
 
 import time
+import json
 
 import rclpy
 from rclpy.node import Node
@@ -37,7 +38,7 @@ class MissionControllerNode(Node):
         self.declare_parameter('skips_per_run', 1)
         self.declare_parameter('unskippable_stages_manual', [11])
         self.declare_parameter('unskippable_stages_auto', [5, 11])
-        self.declare_parameter('stage_max_points', {})
+        self.declare_parameter('stage_max_points', '{}')
 
         self.time_limit = self.get_parameter('run_time_limit_sec').value
         self.warning_time = self.get_parameter('warning_time_sec').value
@@ -48,8 +49,11 @@ class MissionControllerNode(Node):
         # Stage max points — pas geçme cezası hesabı
         self.stage_points = {}
         raw = self.get_parameter('stage_max_points').value
-        if isinstance(raw, dict):
-            self.stage_points = {int(k): int(v) for k, v in raw.items()}
+        try:
+            parsed_points = json.loads(raw)
+            self.stage_points = {int(k): int(v) for k, v in parsed_points.items()}
+        except json.JSONDecodeError:
+            self.get_logger().error("stage_max_points geçerli bir JSON değil!")
 
         # ── Durum ──
         self.current_mode = SystemMode.MODE_IDLE

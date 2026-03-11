@@ -22,6 +22,8 @@ Nav node'lar bu topic'i dinleyip kendi behavior'ları aktif olduğunda cmd_vel y
 değilse sessiz kalır.
 """
 
+import json
+
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
@@ -56,13 +58,16 @@ class BehaviorExecutorNode(Node):
         self.declare_parameter('obstacle_approach_speed', 0.3)
 
         # Stage → behavior eşlemesi
-        self.declare_parameter('stage_behaviors', {})
+        self.declare_parameter('stage_behaviors', '{}')
         raw_behaviors = self.get_parameter('stage_behaviors').value
 
         self.stage_behavior_map = {}
-        if isinstance(raw_behaviors, dict):
-            for k, v in raw_behaviors.items():
+        try:
+            parsed_behaviors = json.loads(raw_behaviors)
+            for k, v in parsed_behaviors.items():
                 self.stage_behavior_map[int(k)] = str(v)
+        except json.JSONDecodeError:
+            self.get_logger().error("stage_behaviors geçerli bir JSON değil!")
 
         # Aşama bazlı hız ayarları
         self.stage_speeds = {

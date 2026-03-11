@@ -10,19 +10,8 @@ mission_controller_node:
     unskippable_stages_manual: [11]
     unskippable_stages_auto: [5, 11]
 
-    # Puanlama (pas geçme ceza hesabı için)
-    stage_max_points:
-      1: 10     # Su geçişi
-      2: 5      # Çakıllı yol
-      3: 5      # Yan eğim
-      4: 5      # Dik engel
-      5: 50     # Trafik konileri
-      6: 50     # Kayar engel
-      7: 5      # Engebeli arazi
-      8: 15     # Dik eğim çıkış
-      9: 50     # Atış
-      10: 15    # Dik eğim iniş
-      11: 25    # Hızlanma
+    # Puanlama (pas geçme ceza hesabı için - JSON string olarak verilir)
+    stage_max_points: '{"1": 10, "2": 5, "3": 5, "4": 5, "5": 50, "6": 50, "7": 5, "8": 15, "9": 50, "10": 15, "11": 25}'
 
 stage_manager_node:
   ros__parameters:
@@ -41,7 +30,7 @@ behavior_executor_node:
   ros__parameters:
     rate: 20.0
 
-    # Her aşama için navigation stratejisi
+    # Her aşama için navigation stratejisi (JSON string olarak verilir)
     # "path_follow" = bariyer takibi
     # "cone_avoid"  = koni slalom
     # "slide_pass"  = kayar engel geçiş
@@ -50,18 +39,7 @@ behavior_executor_node:
     # "targeting"   = atış
     # "sprint"      = hızlanma
     # "default"     = sadece bariyer takibi + yavaş ilerleme
-    stage_behaviors:
-      1: "default"        # Su geçişi — yavaş düz git
-      2: "default"        # Çakıllı yol — yavaş düz git
-      3: "default"        # Yan eğim — slope_controller halleder
-      4: "default"        # Dik engel — yavaş düz git
-      5: "cone_avoid"     # Trafik konileri — koni kaçınma
-      6: "slide_pass"     # Kayar engel — dur-izle-geç
-      7: "default"        # Engebeli arazi — yavaş merkez takibi
-      8: "slope_climb"    # Dik eğim çıkış — eğim kontrol + stop
-      9: "targeting"      # Atış — dur + auto-aim
-      10: "slope_desc"    # Dik eğim iniş — eğim kontrol + stop
-      11: "sprint"        # Hızlanma — max hız
+    stage_behaviors: '{"1": "default", "2": "default", "3": "default", "4": "default", "5": "cone_avoid", "6": "slide_pass", "7": "default", "8": "slope_climb", "9": "targeting", "10": "slope_desc", "11": "sprint"}'
 
     # Aşamalar arası geçiş hızları
     default_speed: 0.5              # m/s
