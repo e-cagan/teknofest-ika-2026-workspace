@@ -35,6 +35,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-humble-image-transport \
     ros-humble-image-transport-plugins \
     ros-humble-rosbridge-suite \
+    ros-humble-foxglove-bridge \
     ros-humble-joy \
     ros-humble-tf2-ros \
     ros-humble-tf2-geometry-msgs \
@@ -94,7 +95,7 @@ RUN chmod +x /entrypoint.sh
 RUN mkdir -p /ros2_ws/recordings
 
 # Port (Foxglove WebSocket)
-EXPOSE 9090
+EXPOSE 8765
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["ros2", "launch", "ika_bringup", "full_system.launch.py", \

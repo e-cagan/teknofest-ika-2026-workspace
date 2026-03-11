@@ -1,44 +1,28 @@
 # ══════════════════════════════════════════════
-# TEKNOFEST 2026 İKA — Jetson Orin Nano Bağımlılıkları
+# TEKNOFEST 2026 İKA — Jetson Orin Nano
 # ══════════════════════════════════════════════
 #
-# NOT: PyTorch ve torchvision bu dosyadan YÜKLENMEYECEK.
-# Jetson ARM64 mimarisi için NVIDIA'nın özel .whl dosyaları
-# veya L4T base container'ı kullanılmalıdır.
-# pip install torch → x86 versiyonunu indirir, Jetson'da ÇALIŞMAZ.
-#
-# Base image (dustynv/ros:humble-pytorch-l4t-r36.2.0) zaten içerir:
-#   - PyTorch (CUDA destekli, JetPack uyumlu)
-#   - torchvision
-#   - CUDA, cuDNN, TensorRT
-#   - ROS2 Humble
-#   - OpenCV (CUDA destekli)
+# DİKKAT: torch, torchvision, opencv-python base image'dan gelir.
+# Bunları pip ile YENİDEN YÜKLEME — Jetson CUDA desteği bozulur.
 
-# ── YOLO ──
-ultralytics>=8.0.0          # YOLOv8 — PyTorch'u base image'dan kullanır
-                             # TensorRT export: model.export(format='engine')
+# Ultralytics — torch bağımlılığını ATLA
+ultralytics>=8.0.0 --no-deps
 
-# ── Serial ──
-pyserial>=3.5               # STM32 UART haberleşme
+# Ultralytics'in torch HARİÇ gerçek bağımlılıkları
+matplotlib>=3.3.0
+pandas>=1.1.4
+seaborn>=0.11.0
+Pillow>=7.1.2
+pyyaml>=5.3.1
+requests>=2.23.0
+scipy>=1.4.1
+tqdm>=4.64.0
+psutil
+py-cpuinfo
+thop>=0.1.1
 
-# ── Görüntü işleme (ek) ──
-numpy>=1.23.0               # OpenCV ile zaten gelir ama pin edelim
+# STM32 UART
+pyserial>=3.5
 
-# ── Template oluşturma (opsiyonel, sadece bir kere) ──
-# Pillow>=9.0.0             # generate_templates.py için — gerekirse uncomment et
-
-# ══════════════════════════════════════════════
-# Jetson'a ÖZGÜ — ayrıca apt ile yüklenenler:
-#
-# sudo apt install -y \
-#   ros-humble-cv-bridge \
-#   ros-humble-image-transport \
-#   ros-humble-rosbridge-suite \
-#   ros-humble-joy \
-#   ros-humble-tf2-ros \
-#   ros-humble-robot-state-publisher \
-#   ros-humble-joint-state-publisher \
-#   ros-humble-v4l2-camera \
-#   ros-humble-rplidar-ros \
-#   ros-humble-robot-localization
-# ══════════════════════════════════════════════
+# Numpy zaten var ama pin edelim
+numpy>=1.23.0
