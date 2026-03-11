@@ -18,10 +18,9 @@ scipy>=1.4.1
 tqdm>=4.64.0
 psutil
 py-cpuinfo
-thop>=0.1.1
 
 # STM32 UART
 pyserial>=3.5
 
-# OpenCV (cv2) ile uyumluluk için Numpy 1.x serisinde kalmalı!
+# OpenCV ve PyTorch uyumluluğu
 numpy==1.26.4

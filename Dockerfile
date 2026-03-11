@@ -40,11 +40,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# NVIDIA JetPack 6 (L4T R36.x) için özel optimize edilmiş PyTorch ve Torchvision
-# CUDA desteğinin bozulmaması için doğrudan NVIDIA sunucularından çekilir.
-RUN pip3 install --no-cache-dir \
-    torch torchvision \
-    --extra-index-url https://developer.download.nvidia.com/compute/redist/jp/v60/dp/pt
+# ZIRH 1: PyTorch'un yan paketlerini standart sunucudan al (hata vermemesi için)
+RUN pip3 install --no-cache-dir typing_extensions sympy networkx jinja2 fsspec
+
+# ZIRH 2: SADECE NVIDIA sunucusundan CUDA destekli PyTorch'u KUR (Standart sunucu yasaklanır)
+RUN pip3 install --no-cache-dir torch torchvision \
+    --index-url https://developer.download.nvidia.com/compute/redist/jp/v60/dp/pt
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # ROS2 paketleri
@@ -71,15 +72,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # ── Stage 3: Python bağımlılıkları ──
-# ── Stage 3: Python bağımlılıkları ──
 COPY requirements.txt /tmp/requirements.txt
-
-# Önce ultralytics'i torch'a dokunmaması için --no-deps ile tek başına kuruyoruz
-RUN pip3 install --no-cache-dir --no-deps ultralytics>=8.0.0
-
-# Sonra geri kalan alt bağımlılıkları (pandas, matplotlib vb.) kuruyoruz
 RUN pip3 install --no-cache-dir -r /tmp/requirements.txt \
     && rm /tmp/requirements.txt
+
+# ZIRH 3: YOLO ve thop paketlerini SADECE EN SON, torch'u ezmesi yasaklanmış şekilde (--no-deps) kuruyoruz
+RUN pip3 install --no-cache-dir --no-deps ultralytics>=8.0.0 thop>=0.1.1
 
 # ── Stage 4: YOLO model ağırlıkları ──
 # Eğitilmiş model ağırlıkları — container boyutunu artırır ama
